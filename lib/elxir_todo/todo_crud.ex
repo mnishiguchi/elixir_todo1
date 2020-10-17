@@ -8,7 +8,17 @@ defmodule ElixirTodo.TodoCrud do
   @doc """
   A constructror that returns a new instance of TodoCrud struct.
   """
-  def new, do: %TodoCrud{}
+  def new(entries \\ []) do
+    Enum.reduce(
+      entries,
+      # Initial accumulator value
+      %TodoCrud{},
+      # Updater function
+      fn entry, instance_acc ->
+        add_entry(instance_acc, entry)
+      end
+    )
+  end
 
   @doc """
   A reducer that updates a TodoCrud struct with a given entry.

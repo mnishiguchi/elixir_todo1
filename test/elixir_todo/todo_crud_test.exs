@@ -8,6 +8,21 @@ defmodule TodoCrudTest do
     assert TodoCrud.new() == %TodoCrud{auto_id: 1, collection: %{}}
   end
 
+  test "new/1 creates a new instance with specified entries" do
+    entries_to_create = [
+      %{date: "2020-10-16", title: "Study Elixir"},
+      %{date: "2020-10-17", title: "Eat sushi"}
+    ]
+
+    assert TodoCrud.new(entries_to_create) == %TodoCrud{
+             auto_id: 3,
+             collection: %{
+               1 => %{id: 1, date: "2020-10-16", title: "Study Elixir"},
+               2 => %{id: 2, date: "2020-10-17", title: "Eat sushi"}
+             }
+           }
+  end
+
   test "add_entry/2 inserts an entry" do
     entry1 = %{date: "2020-10-16", title: "Study Elixir"}
     entry2 = %{date: "2020-10-17", title: "Eat sushi"}
