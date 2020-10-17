@@ -1,14 +1,14 @@
-defmodule ElixirTodo.SimpleTodoList do
+defmodule ElixirTodo.TodoSimple do
   @moduledoc """
   ## Examples
 
-      iex> todo_list = TodoList.new
+      iex> todo_list = TodoSimple.new
       %{}
 
-      iex> todo_list = todo_list |> TodoList.add_entry("2020-10-16", "Study Elixir")
+      iex> todo_list = todo_list |> TodoSimple.add_entry("2020-10-16", "Study Elixir")
       %{"2020-10-16" => ["Study Elixir"]}
 
-      iex> TodoList.entries(todo_list, "2020-10-16")
+      iex> TodoSimple.entries(todo_list, "2020-10-16")
       ["Study Elixir"]
 
   """
