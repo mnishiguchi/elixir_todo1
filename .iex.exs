@@ -3,3 +3,6 @@ alias ElixirTodo.MultiDict
 alias ElixirTodo.TodoMultiDict
 alias ElixirTodo.TodoEntryMap
 alias ElixirTodo.TodoCrud
+alias ElixirTodo.ServerProcess
+alias ElixirTodo.KeyValueStore
+alias ElixirTodo.TodoWithServerProcess
