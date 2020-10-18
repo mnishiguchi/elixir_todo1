@@ -1,4 +1,13 @@
 defmodule ElixirTodo.Server do
+  @moduledoc """
+  A server that manages a given todo-list. Multiple clients communicate with
+  multiple `ElixirTodo.Server` processes. There is an added benefit to the
+  sequential nature of processes. Because a process runs only one request at a
+  time, its internal state is consistent. We know there cannot be multiple
+  simultaneous updates of the process state, which makes race conditions in a
+  single process impossible. Each process serves as a synchronization point.
+  """
+
   # auto_id - the id value that is assigned to a new entry, initially 1.
   # collection - the collection of collection, initially an empty map.
   defstruct auto_id: 1, collection: %{}
@@ -9,30 +18,28 @@ defmodule ElixirTodo.Server do
   # The client API
   # ---
 
-  @server_name __MODULE__
-
   def start do
-    GenServer.start(__MODULE__, nil, name: @server_name)
+    GenServer.start(__MODULE__, nil)
   end
 
-  def stop do
-    GenServer.stop(@server_name)
+  def stop(pid) do
+    GenServer.stop(pid)
   end
 
-  def add_entry(%{date: _date, title: _title} = entry) do
-    GenServer.cast(@server_name, {:add_entry, entry})
+  def add_entry(pid, %{date: _date, title: _title} = entry) do
+    GenServer.cast(pid, {:add_entry, entry})
   end
 
-  def entries(date) do
-    GenServer.call(@server_name, {:entries, date})
+  def entries(pid, date) do
+    GenServer.call(pid, {:entries, date})
   end
 
-  def update_entry(%{id: _id} = entry) do
-    GenServer.cast(@server_name, {:update_entry, entry})
+  def update_entry(pid, %{id: _id} = entry) do
+    GenServer.cast(pid, {:update_entry, entry})
   end
 
-  def delete_entry(entry_id) do
-    GenServer.cast(@server_name, {:delete_entry, entry_id})
+  def delete_entry(pid, entry_id) do
+    GenServer.cast(pid, {:delete_entry, entry_id})
   end
 
   # ---
@@ -41,7 +48,7 @@ defmodule ElixirTodo.Server do
 
   # Initialize the server state.
   @impl true
-  def init(_) do
+  def init(pid) do
     {:ok, %ElixirTodo.Server{}}
   end
 

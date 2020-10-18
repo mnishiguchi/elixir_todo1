@@ -7,3 +7,6 @@ alias ElixirTodo.ServerProcess
 alias ElixirTodo.KeyValueStore
 alias ElixirTodo.TodoWithServerProcess
 alias ElixirTodo.TodoGenServer
+alias ElixirTodo.List, as: TodoList
+alias ElixirTodo.Server, as: TodoServer
+alias ElixirTodo.Cache, as: TodoCache

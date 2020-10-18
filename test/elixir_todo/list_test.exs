@@ -1,6 +1,5 @@
 defmodule ElixirTodo.ListTest do
   use ExUnit.Case
-  doctest ElixirTodo
 
   test "new/0 creates a new instance" do
     assert ElixirTodo.List.new() == %ElixirTodo.List{auto_id: 1, collection: %{}}
