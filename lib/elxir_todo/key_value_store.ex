@@ -1,17 +1,10 @@
 defmodule ElixirTodo.KeyValueStore do
   @moduledoc """
-  A key value store that is build with ServerProcess module.
+  A key value store that is build with GenServer module.
 
-  Examples:
+  ## Examples:
 
-      iex> pid = ServerProcess.start(KeyValueStore)
-      #PID<0.201.0>
-      iex> ServerProcess.call(pid, {:put, :some_key, :some_value})
-      :ok
-      iex> ServerProcess.call(pid, {:get, :some_key})
-      :some_value
-
-      iex> pid = KeyValueStore.start
+      iex> {:ok, pid} = KeyValueStore.start
       #PID<0.218.0>
       iex> pid |> KeyValueStore.put("name", "Masa")
       :ok
@@ -20,22 +13,23 @@ defmodule ElixirTodo.KeyValueStore do
 
   """
 
-  alias ElixirTodo.ServerProcess
+  # https://hexdocs.pm/elixir/GenServer.html
+  use GenServer
 
   # ---
   # The client API
   # ---
 
   def start do
-    ServerProcess.start(__MODULE__)
+    GenServer.start(__MODULE__, nil)
   end
 
   def put(pid, key, value) do
-    ServerProcess.cast(pid, {:put, key, value})
+    GenServer.cast(pid, {:put, key, value})
   end
 
   def get(pid, key) do
-    ServerProcess.call(pid, {:get, key})
+    GenServer.call(pid, {:get, key})
   end
 
   # ---
@@ -43,15 +37,30 @@ defmodule ElixirTodo.KeyValueStore do
   # ---
 
   # Initialize the server state.
-  def init, do: Map.new()
+  @impl true
+  def init(_) do
+    # :timer.send_interval(5000, :cleanup)
+    {:ok, %{}}
+  end
+
+  @impl true
+  def handle_info(:cleanup, state) do
+    IO.puts("performing cleanup...")
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(_, state), do: {:noreply, state}
 
   # Handles the put request.
+  @impl true
   def handle_cast({:put, key, value}, state) do
-    Map.put(state, key, value)
+    {:noreply, Map.put(state, key, value)}
   end
 
   # Handles the get request.
-  def handle_call({:get, key}, state) do
-    {Map.get(state, key), state}
+  @impl true
+  def handle_call({:get, key}, _from, state) do
+    {:reply, Map.get(state, key), state}
   end
 end

@@ -6,3 +6,4 @@ alias ElixirTodo.TodoCrud
 alias ElixirTodo.ServerProcess
 alias ElixirTodo.KeyValueStore
 alias ElixirTodo.TodoWithServerProcess
+alias ElixirTodo.TodoGenServer
