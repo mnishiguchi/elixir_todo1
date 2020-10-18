@@ -14,9 +14,7 @@ defmodule ElixirTodo.TodoCrud do
       # Initial accumulator value
       %TodoCrud{},
       # Updater function
-      fn entry, instance_acc ->
-        add_entry(instance_acc, entry)
-      end
+      fn entry, instance_acc -> add_entry(instance_acc, entry) end
     )
   end
 
@@ -31,9 +29,9 @@ defmodule ElixirTodo.TodoCrud do
     new_entry = put_in(entry[:id], auto_id)
 
     # Add the new entry to the collection and increment the `auto_id` field.
-    updated_collection = put_in(collection[auto_id], new_entry)
-
-    %TodoCrud{instance | collection: updated_collection, auto_id: auto_id + 1}
+    instance
+    |> Map.put(:collection, put_in(collection[auto_id], new_entry))
+    |> Map.put(:auto_id, auto_id + 1)
   end
 
   @doc """
@@ -77,7 +75,7 @@ defmodule ElixirTodo.TodoCrud do
         entry_id = entry.id
         updated_entry = %{id: ^entry_id} = updater_fn.(entry)
 
-        %TodoCrud{instance | collection: put_in(collection[entry_id], updated_entry)}
+        instance |> Map.put(:collection, put_in(collection[entry_id], updated_entry))
     end
   end
 
@@ -89,7 +87,6 @@ defmodule ElixirTodo.TodoCrud do
         id
       )
       when is_number(id) do
-    {_poped_entry, updated_collection} = pop_in(collection[id])
-    instance |> Map.put(:collection, updated_collection)
+    instance |> Map.put(:collection, Map.delete(collection, id))
   end
 end
