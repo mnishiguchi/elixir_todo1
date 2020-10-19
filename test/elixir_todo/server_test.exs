@@ -2,7 +2,7 @@ defmodule ElixirTodo.ServerTest do
   use ExUnit.Case
 
   setup do
-    {:ok, pid} = ElixirTodo.Server.start()
+    {:ok, pid} = ElixirTodo.Server.start("test todo list")
     # IO.puts("\nServer started")
 
     on_exit(fn ->

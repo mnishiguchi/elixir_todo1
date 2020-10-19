@@ -1,4 +1,8 @@
 defmodule ElixirTodo.Database do
+  @moduledoc """
+  A simple disk-based data persistence storage.
+  """
+
   # https://hexdocs.pm/elixir/GenServer.html
   use GenServer
 

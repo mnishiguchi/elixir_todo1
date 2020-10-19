@@ -37,7 +37,7 @@ defmodule ElixirTodo.Cache do
         {:reply, todo_server, todo_servers}
 
       :error ->
-        {:ok, new_server} = ElixirTodo.Server.start()
+        {:ok, new_server} = ElixirTodo.Server.start(todo_list_name)
 
         {
           :reply,
