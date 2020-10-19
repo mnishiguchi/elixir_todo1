@@ -8,10 +8,6 @@ defmodule ElixirTodo.Server do
   single process impossible. Each process serves as a synchronization point.
   """
 
-  # auto_id - the id value that is assigned to a new entry, initially 1.
-  # collection - the collection of collection, initially an empty map.
-  defstruct auto_id: 1, collection: %{}
-
   use GenServer
 
   # ---
@@ -48,57 +44,31 @@ defmodule ElixirTodo.Server do
 
   # Initialize the server state.
   def init(todo_list_name) do
-    initial_state = {todo_list_name, %ElixirTodo.Server{}}
+    initial_state = {todo_list_name, ElixirTodo.List.new()}
     {:ok, initial_state}
   end
 
   # Fetches collection for a given date. Returns matching entries.
   def handle_call({:entries, date}, _caller_pid, {_name, todo_list} = state) do
-    %ElixirTodo.Server{collection: collection} = todo_list
-
-    # Both trensformations happens in a single pass through the input collection
-    # because we use Stream for the first transformer function.
-    entries =
-      collection
-      |> Stream.filter(fn {_id, entry} -> entry.date == date end)
-      |> Enum.map(fn {_id, entry} -> entry end)
-
-    {:reply, entries, state}
+    matched_entries = todo_list |> ElixirTodo.List.entries(date)
+    {:reply, matched_entries, state}
   end
 
   # Updates a ElixirTodo.Server struct with a given entry. Returns new state.
   def handle_cast({:add_entry, entry}, {name, todo_list} = _state) do
-    %ElixirTodo.Server{collection: collection, auto_id: auto_id} = todo_list
-
-    # Set the id for the entry being added.
-    new_entry = put_in(entry[:id], auto_id)
-
-    # Add the new entry to the collection and increment the `auto_id` field.
-    updated_todo_list =
-      todo_list
-      |> Map.put(:collection, put_in(collection[auto_id], new_entry))
-      |> Map.put(:auto_id, auto_id + 1)
-
+    updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.add_entry(entry)
     {:noreply, {name, updated_todo_list}}
   end
 
   # Updates an entry in the collection. Returns new state.
-  def handle_cast({:update_entry, entry}, {name, todo_list} = state) do
-    %ElixirTodo.Server{collection: collection} = todo_list
-
-    updated_state =
-      case collection[entry.id] do
-        nil -> state
-        _found -> {name, todo_list |> Map.put(:collection, put_in(collection[entry.id], entry))}
-      end
-
-    {:noreply, updated_state}
+  def handle_cast({:update_entry, entry}, {name, todo_list} = _state) do
+    updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.update_entry(entry)
+    {:noreply, {name, updated_todo_list}}
   end
 
   # Deletes an entry in the collection. Returns new state.
   def handle_cast({:delete_entry, id}, {name, todo_list} = _state) when is_number(id) do
-    %ElixirTodo.Server{collection: collection} = todo_list
-    updated_todo_list = todo_list |> Map.put(:collection, Map.delete(collection, id))
+    updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.delete_entry(id)
     {:noreply, {name, updated_todo_list}}
   end
 end
