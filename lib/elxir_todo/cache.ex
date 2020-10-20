@@ -1,9 +1,14 @@
 defmodule ElixirTodo.Cache do
   use GenServer
 
-  @doc """
+  @moduledoc """
   A server that creates and store `ElixirTodo.Server` instances. Multiple
   clients issue requests to the single `ElixirTodo.Cache` process.
+
+  ## Persistence
+  1 ElixirTodo.Cache ensures that a database process is started.
+  2 ElixirTodo.Server persists the list on every modification.
+  3 ElixirTodo.Server tries to fetch the list from a disk during the first retrieval.
   """
 
   # ---
@@ -26,7 +31,10 @@ defmodule ElixirTodo.Cache do
   # The server callbacks
   # ---
 
+  @db_directory "./tmp/persist/"
+
   def init(_) do
+    ElixirTodo.Database.start(@db_directory)
     {:ok, %{}}
   end
 

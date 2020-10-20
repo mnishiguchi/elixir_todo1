@@ -1,13 +1,16 @@
 defmodule ElixirTodo.ServerTest do
   use ExUnit.Case
 
+  @db_directory "./tmp/test_db/"
+
   setup do
+    ElixirTodo.Database.start(@db_directory)
     {:ok, pid} = ElixirTodo.Server.start("test todo list")
-    # IO.puts("\nServer started")
 
     on_exit(fn ->
+      ElixirTodo.Database.clear(@db_directory)
+      ElixirTodo.Database.stop()
       :ok = ElixirTodo.Server.stop(pid)
-      # IO.puts("Server stopped")
     end)
 
     {:ok, pid: pid}
@@ -30,7 +33,7 @@ defmodule ElixirTodo.ServerTest do
       :ok = ElixirTodo.Server.add_entry(pid, %{date: "2020-10-16", title: "Study Elixir"})
     end
 
-    test "updates an entry" , %{pid: pid}do
+    test "updates an entry", %{pid: pid} do
       ElixirTodo.Server.update_entry(pid, %{id: 1, date: "2020-10-16", title: "Eat sushi"})
       |> Kernel.==(:ok)
       |> assert

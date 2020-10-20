@@ -44,31 +44,34 @@ defmodule ElixirTodo.Server do
 
   # Initialize the server state.
   def init(todo_list_name) do
-    initial_state = {todo_list_name, ElixirTodo.List.new()}
+    # Important: This assumes ElixirTodo.Database is already running.
+    todo_list = ElixirTodo.Database.get(todo_list_name) || ElixirTodo.List.new()
+    initial_state = {todo_list_name, todo_list}
     {:ok, initial_state}
   end
 
   # Fetches collection for a given date. Returns matching entries.
-  def handle_call({:entries, date}, _caller_pid, {_name, todo_list} = state) do
+  def handle_call({:entries, date}, _caller_pid, {_todo_list_name, todo_list} = state) do
     matched_entries = todo_list |> ElixirTodo.List.entries(date)
     {:reply, matched_entries, state}
   end
 
   # Updates a ElixirTodo.Server struct with a given entry. Returns new state.
-  def handle_cast({:add_entry, entry}, {name, todo_list} = _state) do
+  def handle_cast({:add_entry, entry}, {todo_list_name, todo_list} = _state) do
     updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.add_entry(entry)
-    {:noreply, {name, updated_todo_list}}
+    ElixirTodo.Database.store(todo_list_name, updated_todo_list)
+    {:noreply, {todo_list_name, updated_todo_list}}
   end
 
   # Updates an entry in the collection. Returns new state.
-  def handle_cast({:update_entry, entry}, {name, todo_list} = _state) do
+  def handle_cast({:update_entry, entry}, {todo_list_name, todo_list} = _state) do
     updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.update_entry(entry)
-    {:noreply, {name, updated_todo_list}}
+    {:noreply, {todo_list_name, updated_todo_list}}
   end
 
   # Deletes an entry in the collection. Returns new state.
-  def handle_cast({:delete_entry, id}, {name, todo_list} = _state) when is_number(id) do
+  def handle_cast({:delete_entry, id}, {todo_list_name, todo_list} = _state) when is_number(id) do
     updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.delete_entry(id)
-    {:noreply, {name, updated_todo_list}}
+    {:noreply, {todo_list_name, updated_todo_list}}
   end
 end
