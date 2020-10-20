@@ -44,10 +44,14 @@ defmodule ElixirTodo.Server do
 
   # Initialize the server state.
   def init(todo_list_name) do
+    send(self(), :initialize_state)
+    {:ok, {todo_list_name, nil}}
+  end
+
+  def handle_info(:initialize_state, {todo_list_name, _} = _state) do
     # Important: This assumes ElixirTodo.Database is already running.
     todo_list = ElixirTodo.Database.get(todo_list_name) || ElixirTodo.List.new()
-    initial_state = {todo_list_name, todo_list}
-    {:ok, initial_state}
+    {:noreply, {todo_list_name, todo_list}}
   end
 
   # Fetches collection for a given date. Returns matching entries.
