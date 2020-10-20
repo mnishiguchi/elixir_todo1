@@ -49,13 +49,23 @@ defmodule ElixirTodo.Database do
   end
 
   def handle_cast({:store, key, data}, db_directory) do
-    file_path(db_directory, key) |> save_data(data)
+    spawn(fn ->
+      file_path(db_directory, key) |> save_data(data)
+    end)
+
     {:noreply, db_directory}
   end
 
-  def handle_call({:get, key}, _from, db_directory) do
-    data = file_path(db_directory, key) |> fetch_data()
-    {:reply, data, db_directory}
+  def handle_call({:get, key}, caller_pid, db_directory) do
+    # The problem with this approach is that concurrency is unbound. If you have
+    # 100,000 simultaneous clients, then you’ll issue that many concurrent I/O
+    # operations, which may negatively affect the entire system.
+    spawn(fn ->
+      data = file_path(db_directory, key) |> fetch_data()
+      GenServer.reply(caller_pid, data)
+    end)
+
+    {:noreply, db_directory}
   end
 
   defp file_path(db_directory, key) do
