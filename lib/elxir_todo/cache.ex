@@ -31,10 +31,8 @@ defmodule ElixirTodo.Cache do
   # The server callbacks
   # ---
 
-  @db_directory "./tmp/persist/"
-
   def init(_) do
-    ElixirTodo.Database.start(@db_directory)
+    ElixirTodo.Database.start()
     {:ok, %{}}
   end
 

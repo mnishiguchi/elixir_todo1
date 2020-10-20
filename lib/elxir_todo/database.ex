@@ -11,12 +11,13 @@ defmodule ElixirTodo.Database do
   # ---
 
   @server_name __MODULE__
+  @db_directory "./tmp/persist/"
 
-  def start(db_directory) do
+  def start(db_directory \\ nil) do
     # The process is locally registered under an alias, which keeps things
     # simple and relieves us from passing around the pid. A downside is that we
     # can run only one instance of the database process.
-    GenServer.start(__MODULE__, db_directory, name: @server_name)
+    GenServer.start(__MODULE__, db_directory || @db_directory, name: @server_name)
   end
 
   def stop() do
