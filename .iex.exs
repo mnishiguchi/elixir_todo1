@@ -10,3 +10,5 @@ alias ElixirTodo.TodoGenServer
 alias ElixirTodo.List, as: TodoList
 alias ElixirTodo.Server, as: TodoServer
 alias ElixirTodo.Cache, as: TodoCache
+alias ElixirTodo.Database, as: TodoDatabase
+alias ElixirTodo.DatabaseWorker, as: TodoDatabaseWorker

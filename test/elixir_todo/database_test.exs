@@ -7,7 +7,6 @@ defmodule ElixirTodo.DatabaseTest do
     on_exit(fn ->
       :ok = ElixirTodo.Database.stop()
       ElixirTodo.Database.clear(@db_directory)
-      IO.puts("Server stopped")
     end)
 
     :ok

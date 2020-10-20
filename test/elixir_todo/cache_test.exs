@@ -3,11 +3,9 @@ defmodule ElixirTodo.CacheTest do
 
   setup do
     {:ok, cache_pid} = ElixirTodo.Cache.start()
-    IO.puts("\nServer started")
 
     on_exit(fn ->
       :ok = ElixirTodo.Cache.stop(cache_pid)
-      IO.puts("Server stopped")
     end)
 
     {:ok, cache_pid: cache_pid}
