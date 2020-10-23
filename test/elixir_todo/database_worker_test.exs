@@ -1,4 +1,4 @@
-defmodule ElixirTodo.DatabaseTest do
+defmodule ElixirTodo.DatabaseWorkerTest do
   use ExUnit.Case
 
   @db_directory "./tmp/test_database"

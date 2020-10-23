@@ -1,6 +1,6 @@
 defmodule ElixirTodo.DatabaseWorker do
   @moduledoc """
-  A simple disk-based data persistence storage.
+  Performs read/write operations on a simple disk-based data persistence storage.
   """
 
   # https://hexdocs.pm/elixir/GenServer.html
@@ -11,6 +11,7 @@ defmodule ElixirTodo.DatabaseWorker do
   # ---
 
   def start(db_directory) do
+    IO.puts "Starting #{__MODULE__}"
     GenServer.start(__MODULE__, db_directory)
   end
 

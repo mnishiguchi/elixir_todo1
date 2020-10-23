@@ -1,5 +1,6 @@
 defmodule ElixirTodo.Server do
   @moduledoc """
+  Keeps a single instance of the Todo.List abstraction.
   A server that manages a given todo-list. Multiple clients communicate with
   multiple `ElixirTodo.Server` processes. There is an added benefit to the
   sequential nature of processes. Because a process runs only one request at a
@@ -15,6 +16,7 @@ defmodule ElixirTodo.Server do
   # ---
 
   def start(todo_list_name) when is_binary(todo_list_name) do
+    IO.puts "Starting #{__MODULE__}:#{todo_list_name}"
     GenServer.start(__MODULE__, todo_list_name)
   end
 
