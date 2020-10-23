@@ -15,9 +15,9 @@ defmodule ElixirTodo.Server do
   # The client API
   # ---
 
-  def start(todo_list_name) when is_binary(todo_list_name) do
+  def start_link(todo_list_name) when is_binary(todo_list_name) do
     IO.puts "Starting #{__MODULE__}:#{todo_list_name}"
-    GenServer.start(__MODULE__, todo_list_name)
+    GenServer.start_link(__MODULE__, todo_list_name)
   end
 
   def stop(pid) do

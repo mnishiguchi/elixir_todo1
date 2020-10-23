@@ -10,9 +10,9 @@ defmodule ElixirTodo.DatabaseWorker do
   # The client API
   # ---
 
-  def start(db_directory) do
+  def start_link(db_directory) do
     IO.puts "Starting #{__MODULE__}"
-    GenServer.start(__MODULE__, db_directory)
+    GenServer.start_link(__MODULE__, db_directory)
   end
 
   def stop(worker_pid) do

@@ -12,7 +12,7 @@ defmodule ElixirTodo.DatabaseWorkerTest do
   end
 
   test "writes and reads data" do
-    {:ok, pid} = ElixirTodo.DatabaseWorker.start(@db_directory)
+    {:ok, pid} = ElixirTodo.DatabaseWorker.start_link(@db_directory)
     assert ElixirTodo.DatabaseWorker.store(pid, "language", "Elixir") == :ok
     assert ElixirTodo.DatabaseWorker.get(pid, "language") == "Elixir"
     :ok = ElixirTodo.DatabaseWorker.stop(pid)

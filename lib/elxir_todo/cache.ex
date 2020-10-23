@@ -55,7 +55,7 @@ defmodule ElixirTodo.Cache do
   # ---
 
   def init(_) do
-    ElixirTodo.Database.start()
+    ElixirTodo.Database.start_link()
     {:ok, %{}}
   end
 
@@ -66,7 +66,7 @@ defmodule ElixirTodo.Cache do
         {:reply, todo_server, todo_servers}
 
       :error ->
-        {:ok, new_server} = ElixirTodo.Server.start(todo_list_name)
+        {:ok, new_server} = ElixirTodo.Server.start_link(todo_list_name)
 
         {
           :reply,

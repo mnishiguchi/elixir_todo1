@@ -16,9 +16,9 @@ defmodule ElixirTodo.Database do
   # The client API
   # ---
 
-  def start(db_directory \\ nil) do
+  def start_link(db_directory \\ nil) do
     IO.puts "Starting #{__MODULE__}"
-    GenServer.start(__MODULE__, db_directory || @db_directory)
+    GenServer.start_link(__MODULE__, db_directory || @db_directory)
   end
 
   def stop() do
@@ -74,7 +74,7 @@ defmodule ElixirTodo.Database do
   # Starts as many workers as `@worker_count` and returns a zero-indexed map.
   defp start_workers() do
     for index <- 1..@worker_count, into: %{} do
-      {:ok, pid} = ElixirTodo.DatabaseWorker.start(@db_directory)
+      {:ok, pid} = ElixirTodo.DatabaseWorker.start_link(@db_directory)
       {index - 1, pid}
     end
   end
