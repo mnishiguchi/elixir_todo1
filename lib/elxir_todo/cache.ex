@@ -42,7 +42,7 @@ defmodule ElixirTodo.Cache do
   # alias instead of passing a pid around. When a process crashe, the supervisor
   # will replace it with a new process.
   def start_link(_) do
-    IO.puts "Starting #{__MODULE__}"
+    IO.puts("Starting #{__MODULE__}")
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
@@ -55,7 +55,6 @@ defmodule ElixirTodo.Cache do
   # ---
 
   def init(_) do
-    ElixirTodo.Database.start_link()
     {:ok, %{}}
   end
 

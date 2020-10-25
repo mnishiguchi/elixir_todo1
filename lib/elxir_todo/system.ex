@@ -44,7 +44,10 @@ defmodule ElixirTodo.System do
 
   def init(_) do
     Supervisor.init(
-      [ElixirTodo.Cache],
+      [
+        ElixirTodo.Cache,
+        ElixirTodo.Database
+      ],
       strategy: :one_for_one
     )
   end

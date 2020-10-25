@@ -16,10 +16,20 @@ defmodule ElixirTodo.Database do
   # The client API
   # ---
 
-  def start_link(db_directory \\ nil) do
-    IO.puts "Starting #{__MODULE__}"
-    GenServer.start_link(__MODULE__, db_directory || @db_directory)
+  def start_link(db_directory) do
+    db_directory = determine_db_directory(db_directory)
+    IO.puts("Starting #{__MODULE__}:#{db_directory}")
+    GenServer.start_link(__MODULE__, db_directory)
   end
+
+  defp determine_db_directory(value) do
+    if is_blank?(value), do: @db_directory, else: value
+  end
+
+  defp is_blank?(nil), do: true
+  defp is_blank?([]), do: true
+  defp is_blank?(%{}), do: true
+  defp is_blank?(value) when is_binary(value), do: String.trim(value) == ""
 
   def stop() do
     GenServer.stop(__MODULE__)
@@ -58,12 +68,12 @@ defmodule ElixirTodo.Database do
   end
 
   def handle_info(:initialize_state, _state) do
-    worker_lookup = start_workers() |> IO.inspect
+    worker_lookup = start_workers() |> IO.inspect()
     {:noreply, worker_lookup}
   end
 
   def handle_call({:choose_worker, key}, _caller_pid, workers) do
-    chosen_worker = workers |> Map.get(worker_hash_key(key)) |> IO.inspect
+    chosen_worker = workers |> Map.get(worker_hash_key(key)) |> IO.inspect()
     {:reply, chosen_worker, workers}
   end
 
