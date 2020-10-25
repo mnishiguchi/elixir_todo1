@@ -43,10 +43,13 @@ defmodule ElixirTodo.System do
   # ---
 
   def init(_) do
+    # Child processes are started synchronously.
+    # Always make sure our init/1 functions run quickly.
     Supervisor.init(
       [
-        ElixirTodo.Cache,
-        ElixirTodo.Database
+        ElixirTodo.ProcessRegistry,
+        ElixirTodo.Database,
+        ElixirTodo.Cache
       ],
       strategy: :one_for_one
     )

@@ -41,7 +41,7 @@ defmodule ElixirTodo.Cache do
   # under a supervisor. Also the process needs to be registered under a local
   # alias instead of passing a pid around. When a process crashe, the supervisor
   # will replace it with a new process.
-  def start_link(_) do
+  def start_link(_opts) do
     IO.puts("Starting #{__MODULE__}")
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end

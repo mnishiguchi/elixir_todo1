@@ -6,34 +6,54 @@ defmodule ElixirTodo.Database do
   can avoid a race condition.
   """
 
-  # https://hexdocs.pm/elixir/GenServer.html
-  use GenServer
-
-  @db_directory "./tmp/persist/"
-  @worker_count 3
+  @default_db_directory "./tmp/persist/"
+  @pool_size 3
 
   # ---
   # The client API
   # ---
 
-  def start_link(db_directory) do
-    db_directory = determine_db_directory(db_directory)
+  # Optionally accepts the `db_directory` option for testing.
+  def start_link(opts) when is_list(opts) do
+    {:ok, db_directory} = opts |> Keyword.get(:db_directory, nil) |> setup_db_directory()
+
     IO.puts("Starting #{__MODULE__}:#{db_directory}")
-    GenServer.start_link(__MODULE__, db_directory)
+    children = 1..@pool_size |> Enum.map(fn worker_id -> worker_spec(db_directory, worker_id) end)
+    Supervisor.start_link(children, strategy: :one_for_one)
   end
 
-  defp determine_db_directory(value) do
-    if is_blank?(value), do: @db_directory, else: value
+  # A custom child spec so that Database can be a supervisor.
+  def child_spec(_opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [[]]},
+      type: :supervisor
+    }
+  end
+
+  defp worker_spec(db_directory, worker_id) do
+    # A unique ID is necessary for each worker because DatabaseWorker's default
+    # child_spec/1 has __MODULE__ in the :id field.
+    Supervisor.child_spec(
+      {ElixirTodo.DatabaseWorker, [db_directory: db_directory, worker_id: worker_id]},
+      id: worker_id
+    )
+  end
+
+  defp setup_db_directory(path) do
+    db_directory =
+      if is_blank?(path),
+        do: @default_db_directory,
+        else: path
+
+    :ok = File.mkdir_p!(db_directory)
+    {:ok, db_directory}
   end
 
   defp is_blank?(nil), do: true
   defp is_blank?([]), do: true
   defp is_blank?(%{}), do: true
   defp is_blank?(value) when is_binary(value), do: String.trim(value) == ""
-
-  def stop() do
-    GenServer.stop(__MODULE__)
-  end
 
   def clear(db_directory) do
     File.rm_rf!(db_directory)
@@ -48,44 +68,9 @@ defmodule ElixirTodo.Database do
     choose_worker(key) |> ElixirTodo.DatabaseWorker.get(key)
   end
 
+  # Returns a worker id that is used for finding a worker.
   defp choose_worker(key) do
-    GenServer.call(__MODULE__, {:choose_worker, key})
-  end
-
-  # ---
-  # The server callbacks
-  # ---
-
-  def init(db_directory) do
-    File.mkdir_p!(db_directory)
-    send(self(), :initialize_state)
-
-    # Manually register our process instead of `GenServer.start` name option so
-    # that we can be sure that `:initialize_state` is the first message.
-    Process.register(self(), __MODULE__)
-
-    {:ok, nil}
-  end
-
-  def handle_info(:initialize_state, _state) do
-    worker_lookup = start_workers() |> IO.inspect()
-    {:noreply, worker_lookup}
-  end
-
-  def handle_call({:choose_worker, key}, _caller_pid, workers) do
-    chosen_worker = workers |> Map.get(worker_hash_key(key)) |> IO.inspect()
-    {:reply, chosen_worker, workers}
-  end
-
-  def worker_hash_key(key) do
-    :erlang.phash2(key, @worker_count)
-  end
-
-  # Starts as many workers as `@worker_count` and returns a zero-indexed map.
-  defp start_workers() do
-    for index <- 1..@worker_count, into: %{} do
-      {:ok, pid} = ElixirTodo.DatabaseWorker.start_link(@db_directory)
-      {index - 1, pid}
-    end
+    # Add one to convert 0-based index to 1-based
+    :erlang.phash2(key, @pool_size) + 1
   end
 end

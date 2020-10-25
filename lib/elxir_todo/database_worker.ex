@@ -10,25 +10,41 @@ defmodule ElixirTodo.DatabaseWorker do
   # The client API
   # ---
 
-  def start_link(db_directory) do
-    IO.puts "Starting #{__MODULE__}"
-    GenServer.start_link(__MODULE__, db_directory)
+  @doc """
+  - db_directory - a path to db directory
+  - worker_id - a unique number that identifies a worker
+  """
+  def start_link(db_directory: db_directory, worker_id: worker_id)
+      when is_binary(db_directory)
+      when is_number(worker_id) do
+    IO.puts("Starting #{__MODULE__}:#{db_directory}:#{worker_id}")
+
+    GenServer.start_link(
+      __MODULE__,
+      db_directory,
+      name: via_tuple(worker_id)
+    )
   end
 
-  def stop(worker_pid) do
-    GenServer.stop(worker_pid)
+  def stop(worker_id) do
+    GenServer.stop(via_tuple(worker_id))
   end
 
   def clear(db_directory) do
     File.rm_rf!(db_directory)
   end
 
-  def store(worker_pid, key, data) do
-    GenServer.cast(worker_pid, {:store, key, data})
+  def store(worker_id, key, data) do
+    GenServer.cast(via_tuple(worker_id), {:store, key, data})
   end
 
-  def get(worker_pid, key) do
-    GenServer.call(worker_pid, {:get, key})
+  def get(worker_id, key) do
+    GenServer.call(via_tuple(worker_id), {:get, key})
+  end
+
+  # This is used as a process name. We do not need to keep track of the pids.
+  defp via_tuple(worker_id) do
+    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, worker_id})
   end
 
   # ---
