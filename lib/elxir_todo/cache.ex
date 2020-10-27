@@ -55,6 +55,7 @@ defmodule ElixirTodo.Cache do
   # ---
 
   def init(_) do
+    # A map of a todo list name to PID; initially blank.
     {:ok, %{}}
   end
 

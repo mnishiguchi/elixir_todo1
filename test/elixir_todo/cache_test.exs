@@ -2,6 +2,7 @@ defmodule ElixirTodo.CacheTest do
   use ExUnit.Case
 
   setup do
+    ElixirTodo.ProcessRegistry.start_link()
     ElixirTodo.Cache.start_link([])
     :ok
   end

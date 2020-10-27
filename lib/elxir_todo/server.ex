@@ -9,7 +9,8 @@ defmodule ElixirTodo.Server do
   single process impossible. Each process serves as a synchronization point.
   """
 
-  use GenServer
+  # Does not restart on termination.
+  use GenServer, restart: :temporary
 
   # ---
   # The client API
@@ -17,7 +18,11 @@ defmodule ElixirTodo.Server do
 
   def start_link(todo_list_name) when is_binary(todo_list_name) do
     IO.puts "Starting #{__MODULE__}:#{todo_list_name}"
-    GenServer.start_link(__MODULE__, todo_list_name)
+    GenServer.start_link(__MODULE__, todo_list_name, name: via_tuple(todo_list_name))
+  end
+
+  defp via_tuple(todo_list_name) do
+    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, todo_list_name})
   end
 
   def stop(pid) do
