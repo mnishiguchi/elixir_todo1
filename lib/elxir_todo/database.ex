@@ -9,6 +9,15 @@ defmodule ElixirTodo.Database do
   @default_db_directory "./tmp/persist/"
   @pool_size 3
 
+  # A custom child spec so that Database can be a supervisor.
+  def child_spec(_opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [[]]},
+      type: :supervisor
+    }
+  end
+
   # ---
   # The client API
   # ---
@@ -20,15 +29,6 @@ defmodule ElixirTodo.Database do
     IO.puts("Starting #{__MODULE__}:#{db_directory}")
     children = 1..@pool_size |> Enum.map(fn worker_id -> worker_spec(db_directory, worker_id) end)
     Supervisor.start_link(children, strategy: :one_for_one)
-  end
-
-  # A custom child spec so that Database can be a supervisor.
-  def child_spec(_opts) do
-    %{
-      id: __MODULE__,
-      start: {__MODULE__, :start_link, [[]]},
-      type: :supervisor
-    }
   end
 
   defp worker_spec(db_directory, worker_id) do

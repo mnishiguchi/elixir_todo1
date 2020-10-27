@@ -10,7 +10,15 @@ defmodule ElixirTodo.Server do
   """
 
   # Does not restart on termination.
+  # Servers are started on demand, so when a user tries to interact with a to-do
+  # list, if the server process isn’t running, it will be started. If a to-do
+  # list server crashes, it will be started on the next use, so there’s no need
+  # to restart it automatically.
   use GenServer, restart: :temporary
+
+  defp via_tuple(todo_list_name) do
+    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, todo_list_name})
+  end
 
   # ---
   # The client API
@@ -19,10 +27,6 @@ defmodule ElixirTodo.Server do
   def start_link(todo_list_name) when is_binary(todo_list_name) do
     IO.puts "Starting #{__MODULE__}:#{todo_list_name}"
     GenServer.start_link(__MODULE__, todo_list_name, name: via_tuple(todo_list_name))
-  end
-
-  defp via_tuple(todo_list_name) do
-    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, todo_list_name})
   end
 
   def stop(pid) do

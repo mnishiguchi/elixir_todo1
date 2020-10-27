@@ -6,6 +6,11 @@ defmodule ElixirTodo.DatabaseWorker do
   # https://hexdocs.pm/elixir/GenServer.html
   use GenServer
 
+  # This is used as a process name. We do not need to keep track of the pids.
+  defp via_tuple(worker_id) do
+    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, worker_id})
+  end
+
   # ---
   # The client API
   # ---
@@ -40,11 +45,6 @@ defmodule ElixirTodo.DatabaseWorker do
 
   def get(worker_id, key) do
     GenServer.call(via_tuple(worker_id), {:get, key})
-  end
-
-  # This is used as a process name. We do not need to keep track of the pids.
-  defp via_tuple(worker_id) do
-    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, worker_id})
   end
 
   # ---

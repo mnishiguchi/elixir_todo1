@@ -1,6 +1,4 @@
 defmodule ElixirTodo.Cache do
-  use GenServer
-
   @moduledoc """
   The system entry point that maintains a collection of `ElixirTodo.Server`
   instances and is responsible for their creation and retrieval. All clients
@@ -33,6 +31,14 @@ defmodule ElixirTodo.Cache do
 
   """
 
+  def child_spec(_opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [[]]},
+      type: :supervisor
+    }
+  end
+
   # ---
   # The client API
   # ---
@@ -43,11 +49,39 @@ defmodule ElixirTodo.Cache do
   # will replace it with a new process.
   def start_link(_opts) do
     IO.puts("Starting #{__MODULE__}")
-    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+
+    # Start the supervisor process here but no children are specified at this
+    # point. The process is registered under a local name, which makes it easy
+    # to interact with that process and ask it to start a child.
+    DynamicSupervisor.start_link(
+      name: __MODULE__,
+      strategy: :one_for_one
+    )
   end
 
   def server_process(todo_list_name) do
-    GenServer.call(__MODULE__, {:server_process, todo_list_name})
+    # The way start_child is used here is not very efficient. Every time we want
+    # to work with a to-do list, we issue a request to the supervisor, so the
+    # supervisor process can become a bottleneck. We will improve it later.
+    case start_child(todo_list_name) do
+      {:ok, pid} -> pid
+      # We tried to start the server, but it was already running. That’s fine.
+      # We have the pid of the server, and we can interact with it.
+      {:error, {:already_started, pid}} -> pid
+    end
+  end
+
+  defp start_child(todo_list_name) do
+    # Ask the supervisor named ElixirTodo.Cache to start a child by involking
+    # `ElixirTodo.Server.start_link(todo_list_name)`.
+    # DynamicSupervisor.start_child/2 is a cross-process synchronous call. A
+    # request is sent to the supervisor process, which then starts the child. If
+    # multiple client processes simultaneously try to start a child under the
+    # same supervisor, the requests will be serialized.
+    DynamicSupervisor.start_child(
+      __MODULE__,
+      {ElixirTodo.Server, todo_list_name}
+    )
   end
 
   # ---
