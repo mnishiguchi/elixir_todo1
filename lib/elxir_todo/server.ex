@@ -16,6 +16,8 @@ defmodule ElixirTodo.Server do
   # to restart it automatically.
   use GenServer, restart: :temporary
 
+  @expiry_idle_timeout :timer.seconds(10)
+
   defp via_tuple(todo_list_name) do
     ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, todo_list_name})
   end
@@ -25,7 +27,7 @@ defmodule ElixirTodo.Server do
   # ---
 
   def start_link(todo_list_name) when is_binary(todo_list_name) do
-    IO.puts "Starting #{__MODULE__}:#{todo_list_name}"
+    IO.puts("Starting #{__MODULE__}:#{todo_list_name}")
     GenServer.start_link(__MODULE__, todo_list_name, name: via_tuple(todo_list_name))
   end
 
@@ -56,37 +58,42 @@ defmodule ElixirTodo.Server do
   # Initialize the server state.
   def init(todo_list_name) do
     send(self(), :initialize_state)
-    {:ok, {todo_list_name, nil}}
+    {:ok, {todo_list_name, nil}, @expiry_idle_timeout}
   end
 
   def handle_info(:initialize_state, {todo_list_name, _} = _state) do
     # Important: This assumes ElixirTodo.Database is already running.
     todo_list = ElixirTodo.Database.get(todo_list_name) || ElixirTodo.List.new()
-    {:noreply, {todo_list_name, todo_list}}
+    {:noreply, {todo_list_name, todo_list}, @expiry_idle_timeout}
+  end
+
+  def handle_info(:timeout, {todo_list_name, _todo_list} = state) do
+    IO.puts("Stopping #{__MODULE__}:#{todo_list_name}")
+    {:stop, :normal, {state, @expiry_idle_timeout}}
   end
 
   # Fetches collection for a given date. Returns matching entries.
   def handle_call({:entries, date}, _caller_pid, {_todo_list_name, todo_list} = state) do
     matched_entries = todo_list |> ElixirTodo.List.entries(date)
-    {:reply, matched_entries, state}
+    {:reply, matched_entries, state, @expiry_idle_timeout}
   end
 
   # Updates a ElixirTodo.Server struct with a given entry. Returns new state.
   def handle_cast({:add_entry, entry}, {todo_list_name, todo_list} = _state) do
     updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.add_entry(entry)
     ElixirTodo.Database.store(todo_list_name, updated_todo_list)
-    {:noreply, {todo_list_name, updated_todo_list}}
+    {:noreply, {todo_list_name, updated_todo_list}, @expiry_idle_timeout}
   end
 
   # Updates an entry in the collection. Returns new state.
   def handle_cast({:update_entry, entry}, {todo_list_name, todo_list} = _state) do
     updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.update_entry(entry)
-    {:noreply, {todo_list_name, updated_todo_list}}
+    {:noreply, {todo_list_name, updated_todo_list}, @expiry_idle_timeout}
   end
 
   # Deletes an entry in the collection. Returns new state.
   def handle_cast({:delete_entry, id}, {todo_list_name, todo_list} = _state) when is_number(id) do
     updated_todo_list = %ElixirTodo.List{} = todo_list |> ElixirTodo.List.delete_entry(id)
-    {:noreply, {todo_list_name, updated_todo_list}}
+    {:noreply, {todo_list_name, updated_todo_list}, @expiry_idle_timeout}
   end
 end

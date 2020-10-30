@@ -16,7 +16,7 @@ defmodule ElixirTodo.SystemTest do
   end
 
   defp start_system do
-    {:ok, system} = ElixirTodo.System.start_link()
+    {:ok, _pid} = ElixirTodo.System.start_link()
     Process.sleep(1)
   end
 
