@@ -14,3 +14,4 @@ alias ElixirTodo.Cache, as: TodoCache
 alias ElixirTodo.Database, as: TodoDatabase
 alias ElixirTodo.DatabaseWorker, as: TodoDatabaseWorker
 alias ElixirTodo.ProcessRegistry, as: TodoProcessRegistry
+alias ElixirTodo.Metrics, as: TodoMetrics
