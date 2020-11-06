@@ -1,12 +1,6 @@
 defmodule ElixirTodo.CacheTest do
   use ExUnit.Case
 
-  setup do
-    ElixirTodo.ProcessRegistry.start_link()
-    ElixirTodo.Cache.start_link([])
-    :ok
-  end
-
   test "can start multiple server processes" do
     server_pid1 = ElixirTodo.Cache.server_process("Foo's")
     server_pid2 = ElixirTodo.Cache.server_process("Bar's")

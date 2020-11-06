@@ -50,7 +50,8 @@ defmodule ElixirTodo.System do
         ElixirTodo.Metrics,
         ElixirTodo.ProcessRegistry,
         ElixirTodo.Database,
-        ElixirTodo.Cache
+        ElixirTodo.Cache,
+        ElixirTodo.Web
       ],
       strategy: :one_for_one
     )

@@ -34,7 +34,7 @@ defmodule ElixirTodo.Cache do
   def child_spec(_opts) do
     %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link, [[]]},
+      start: {__MODULE__, :start_link, []},
       type: :supervisor
     }
   end
@@ -47,7 +47,7 @@ defmodule ElixirTodo.Cache do
   # under a supervisor. Also the process needs to be registered under a local
   # alias instead of passing a pid around. When a process crashe, the supervisor
   # will replace it with a new process.
-  def start_link(_opts) do
+  def start_link() do
     IO.puts("Starting #{__MODULE__}")
 
     # Start the supervisor process here but no children are specified at this

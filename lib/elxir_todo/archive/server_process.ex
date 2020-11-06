@@ -32,9 +32,7 @@ defmodule ElixirTodo.ServerProcess do
     send(server_pid, {:cast, request})
   end
 
-  @doc """
-  Powers the server process and maintains state.
-  """
+  # Powers the server process and maintains state.
   defp loop(callback_module, current_state) do
     receive do
       {:call, request, caller_pid} ->

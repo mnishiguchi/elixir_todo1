@@ -1,50 +1,32 @@
 defmodule ElixirTodo.DatabaseWorker do
   @moduledoc """
   Performs read/write operations on a simple disk-based data persistence storage.
+
+  The discovery of the pid is performed by the pool, so we do not need to
+  register the workers.
   """
 
   # https://hexdocs.pm/elixir/GenServer.html
   use GenServer
 
-  # This is used as a process name. We do not need to keep track of the pids.
-  defp via_tuple(worker_id) do
-    ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, worker_id})
-  end
-
-  # ---
-  # The client API
-  # ---
-
   @doc """
   - db_directory - a path to db directory
-  - worker_id - a unique number that identifies a worker
   """
-  def start_link(db_directory: db_directory, worker_id: worker_id)
-      when is_binary(db_directory)
-      when is_number(worker_id) do
-    IO.puts("Starting #{__MODULE__}:#{db_directory}:#{worker_id}")
-
-    GenServer.start_link(
-      __MODULE__,
-      db_directory,
-      name: via_tuple(worker_id)
-    )
+  def start_link(db_directory) when is_binary(db_directory) do
+    IO.puts("Starting #{__MODULE__}:#{db_directory}")
+    GenServer.start_link(__MODULE__, db_directory)
   end
 
-  def stop(worker_id) do
-    GenServer.stop(via_tuple(worker_id))
+  def stop(pid) when is_pid(pid) do
+    GenServer.stop(pid)
   end
 
-  def clear(db_directory) do
-    File.rm_rf!(db_directory)
+  def store(pid, key, data) when is_pid(pid) do
+    GenServer.cast(pid, {:store, key, data})
   end
 
-  def store(worker_id, key, data) do
-    GenServer.cast(via_tuple(worker_id), {:store, key, data})
-  end
-
-  def get(worker_id, key) do
-    GenServer.call(via_tuple(worker_id), {:get, key})
+  def get(pid, key) when is_pid(pid) do
+    GenServer.call(pid, {:get, key})
   end
 
   # ---
@@ -52,12 +34,7 @@ defmodule ElixirTodo.DatabaseWorker do
   # ---
 
   def init(db_directory) do
-    {:ok, ensure_directory(db_directory)}
-  end
-
-  defp ensure_directory(directory) do
-    File.mkdir_p!(directory)
-    directory
+    {:ok, db_directory}
   end
 
   def handle_cast({:store, key, data}, db_directory) do

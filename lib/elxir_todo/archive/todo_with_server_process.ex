@@ -59,25 +59,7 @@ defmodule ElixirTodo.TodoWithServerProcess do
   # Initialize the server state.
   def init, do: %TodoWithServerProcess{}
 
-  @doc """
-  Updates a TodoWithServerProcess struct with a given entry. Returns new state.
-  """
-  def handle_cast(
-        {:add_entry, entry},
-        %TodoWithServerProcess{collection: collection, auto_id: auto_id} = state
-      ) do
-    # Set the id for the entry being added.
-    new_entry = put_in(entry[:id], auto_id)
-
-    # Add the new entry to the collection and increment the `auto_id` field.
-    state
-    |> Map.put(:collection, put_in(collection[auto_id], new_entry))
-    |> Map.put(:auto_id, auto_id + 1)
-  end
-
-  @doc """
-  Fetches collection for a given date. Returns matching entries.
-  """
+  # Fetches collection for a given date. Returns matching entries.
   def handle_call(
         {:entries, date},
         %TodoWithServerProcess{collection: collection} = state
@@ -92,9 +74,21 @@ defmodule ElixirTodo.TodoWithServerProcess do
     {entries, state}
   end
 
-  @doc """
-  Updates an entry in the collection. Returns new state.
-  """
+  # Updates a TodoWithServerProcess struct with a given entry. Returns new state.
+  def handle_cast(
+        {:add_entry, entry},
+        %TodoWithServerProcess{collection: collection, auto_id: auto_id} = state
+      ) do
+    # Set the id for the entry being added.
+    new_entry = put_in(entry[:id], auto_id)
+
+    # Add the new entry to the collection and increment the `auto_id` field.
+    state
+    |> Map.put(:collection, put_in(collection[auto_id], new_entry))
+    |> Map.put(:auto_id, auto_id + 1)
+  end
+
+  # Updates an entry in the collection. Returns new state.
   def handle_cast(
         {:update_entry, entry},
         %TodoWithServerProcess{collection: collection} = state
@@ -110,9 +104,7 @@ defmodule ElixirTodo.TodoWithServerProcess do
     end
   end
 
-  @doc """
-  Deletes an entry in the collection. Returns new state.
-  """
+  # Deletes an entry in the collection. Returns new state.
   def handle_cast(
         {:delete_entry, id},
         %TodoWithServerProcess{collection: collection} = state
