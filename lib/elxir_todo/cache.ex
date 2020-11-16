@@ -60,28 +60,27 @@ defmodule ElixirTodo.Cache do
   end
 
   def server_process(todo_list_name) do
-    # The way start_child is used here is not very efficient. Every time we want
-    # to work with a to-do list, we issue a request to the supervisor, so the
-    # supervisor process can become a bottleneck. We will improve it later.
-    case start_child(todo_list_name) do
-      {:ok, pid} -> pid
-      # We tried to start the server, but it was already running. That’s fine.
-      # We have the pid of the server, and we can interact with it.
-      {:error, {:already_started, pid}} -> pid
-    end
+    existing_process(todo_list_name) || new_process(todo_list_name)
   end
 
-  defp start_child(todo_list_name) do
+  defp existing_process(todo_list_name) do
+    ElixirTodo.Server.whereis(todo_list_name)
+  end
+
+  defp new_process(todo_list_name) do
     # Ask the supervisor named ElixirTodo.Cache to start a child by involking
     # `ElixirTodo.Server.start_link(todo_list_name)`.
     # DynamicSupervisor.start_child/2 is a cross-process synchronous call. A
     # request is sent to the supervisor process, which then starts the child. If
     # multiple client processes simultaneously try to start a child under the
     # same supervisor, the requests will be serialized.
-    DynamicSupervisor.start_child(
-      __MODULE__,
-      {ElixirTodo.Server, todo_list_name}
-    )
+    case DynamicSupervisor.start_child(
+           __MODULE__,
+           {ElixirTodo.Server, todo_list_name}
+         ) do
+      {:ok, pid} -> pid
+      {:error, {:already_started, pid}} -> pid
+    end
   end
 
   # ---

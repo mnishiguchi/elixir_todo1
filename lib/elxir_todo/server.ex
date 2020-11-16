@@ -16,10 +16,17 @@ defmodule ElixirTodo.Server do
   # to restart it automatically.
   use GenServer, restart: :temporary
 
-  @expiry_idle_timeout :timer.seconds(10)
+  @expiry_idle_timeout :timer.minutes(5)
 
   defp via_tuple(todo_list_name) do
     ElixirTodo.ProcessRegistry.via_tuple({__MODULE__, todo_list_name})
+  end
+
+  def whereis(todo_list_name) do
+    case ElixirTodo.ProcessRegistry.whereis_name({__MODULE__, todo_list_name}) do
+      :undefined -> nil
+      pid -> pid
+    end
   end
 
   # ---

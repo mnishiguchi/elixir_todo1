@@ -47,7 +47,7 @@ defmodule ElixirTodo.System do
     # Always make sure our init/1 functions run quickly.
     Supervisor.init(
       [
-        ElixirTodo.Metrics,
+        # ElixirTodo.Metrics,
         ElixirTodo.ProcessRegistry,
         ElixirTodo.Database,
         ElixirTodo.Cache,

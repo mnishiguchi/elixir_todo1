@@ -13,9 +13,9 @@ defmodule ElixirTodo.ProcessRegistry do
     {:via, Registry, {__MODULE__, key}}
   end
 
-  # ---
-  # The client API
-  # ---
+  def whereis_name(key) do
+    Registry.whereis_name({__MODULE__, key})
+  end
 
   def start_link() do
     IO.puts("Starting #{__MODULE__}")
